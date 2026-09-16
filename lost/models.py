@@ -35,13 +35,13 @@ class LostItem(models.Model):
 
     # image = models.ImageField(upload_to="lost_items/", blank=True, null=True)
 
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="LOST")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "lost_items"
+        db_table = "items"
 
     def __str__(self):
         return self.title

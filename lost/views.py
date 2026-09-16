@@ -66,3 +66,18 @@ class PersonalVerificationQuestionCreateView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FoundItemCreateView(APIView):
+
+    def post(self, request):
+        serializer = LostItemSerializer(data=request.data)
+
+        if serializer.is_valid():
+            found_item = serializer.save(user=request.user, status="FOUND")
+
+            return Response(
+                LostItemSerializer(found_item).data, status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

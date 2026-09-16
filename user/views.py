@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework.permissions import AllowAny
 
 from .models import University, College, Department, User
 
@@ -67,6 +67,7 @@ class DepartmentView(APIView):
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
@@ -87,6 +88,8 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
 
+    permission_classes = [AllowAny]
+
     def post(self, request):
 
         serializer = LoginSerializer(data=request.data)
@@ -98,27 +101,25 @@ class LoginView(APIView):
             user.last_login = timezone.now()
             user.save(update_fields=["last_login"])
 
-            # JWT TOKEN
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
 
             response = Response(
                 {
                     "message": "Login successful",
-                    "acces_token": str(access),
+                    "access_token": str(access),
                     "refresh_token": str(refresh),
                 },
                 status=status.HTTP_200_OK,
             )
 
-            # Store REFRESH TOKEN in HttpOnly cookie
             response.set_cookie(
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
                 secure=False,
                 samesite="Lax",
-                max_age=7 * 24 * 60 * 60,  # 7 days
+                max_age=7 * 24 * 60 * 60,
             )
 
             return response
