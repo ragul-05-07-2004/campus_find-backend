@@ -17,7 +17,7 @@ def find_database_matches(item):
     if item.status == "LOST":
 
         candidates = (
-            LostItem.objects.filter(status="FOUND")
+            LostItem.objects.filter(status="FOUND", report_type="FOUND")
             .exclude(user_id=item.user_id)
             .select_related(
                 "user",
@@ -35,7 +35,7 @@ def find_database_matches(item):
     elif item.status == "FOUND":
 
         candidates = (
-            LostItem.objects.filter(status="LOST")
+            LostItem.objects.filter(status="LOST", report_type="LOST")
             .exclude(user_id=item.user_id)
             .select_related(
                 "user",
@@ -70,22 +70,31 @@ def find_database_matches(item):
 
         result = calculate_django_match_score(item, candidate)
 
-        print("Score:", result["final_score"])
+        score = min(max(float(result["final_score"]), 0.0), 1.0)
+
+        print("Score:", score)
         print("Is match:", result["is_match"])
 
         if result["is_match"]:
 
             print("✅ MATCH FOUND")
 
-            # Send notification to the appropriate user
-            send_match_notification(item, candidate, result["final_score"])
+            send_match_notification(item, candidate, score)
+
+            if item.report_type == "LOST":
+                lost_item_id = item.id
+                found_item_id = candidate.id
+            else:
+                lost_item_id = candidate.id
+                found_item_id = item.id
 
             matches.append(
                 {
-                    "matched_item_id": candidate.id,
+                    "lost_item_id": lost_item_id,
+                    "found_item_id": found_item_id,
                     "title": candidate.title,
                     "status": candidate.status,
-                    "score": result["final_score"],
+                    "score": score,
                     "details": result,
                 }
             )

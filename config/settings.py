@@ -134,12 +134,22 @@ STATIC_URL = "static/"
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+from decouple import config
+
 MAILERS = {
     "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
-    },
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": config("EMAIL_HOST"),
+            "port": config("EMAIL_PORT", cast=int),
+            "username": config("EMAIL_HOST_USER"),
+            "password": config("EMAIL_HOST_PASSWORD"),
+            "use_tls": config("EMAIL_USE_TLS", cast=bool),
+        },
+    }
 }
 
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 AUTH_USER_MODEL = "user.User"
 
 REST_FRAMEWORK = {
@@ -151,7 +161,7 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=55),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 

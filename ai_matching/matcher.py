@@ -2,10 +2,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from .embeddings import generate_embedding
 
-# ============================================================
-# WEIGHTS
-# ============================================================
-
 TITLE_WEIGHT = 0.20
 DESCRIPTION_WEIGHT = 0.25
 CATEGORY_WEIGHT = 0.10
@@ -16,21 +12,11 @@ DETAILS_WEIGHT = 0.30
 MATCH_THRESHOLD = 0.70
 
 
-# ============================================================
-# TEXT NORMALIZATION
-# ============================================================
-
-
 def normalize_text(value):
     if not value:
         return ""
 
     return " ".join(value.lower().strip().split())
-
-
-# ============================================================
-# EXACT MATCH
-# ============================================================
 
 
 def exact_similarity(value1, value2):
@@ -42,11 +28,6 @@ def exact_similarity(value1, value2):
         return 0.0
 
     return 1.0 if value1 == value2 else 0.0
-
-
-# ============================================================
-# AI SEMANTIC SIMILARITY
-# ============================================================
 
 
 def calculate_similarity(text1, text2):
@@ -63,11 +44,6 @@ def calculate_similarity(text1, text2):
     score = cosine_similarity([embedding1], [embedding2])[0][0]
 
     return float(score)
-
-
-# ============================================================
-# DATE SIMILARITY
-# ============================================================
 
 
 def calculate_date_similarity(date1, date2):
@@ -92,11 +68,6 @@ def calculate_date_similarity(date1, date2):
     return 0.0
 
 
-# ============================================================
-# GET ITEM DETAILS
-# ============================================================
-
-
 def get_item_details(item):
 
     try:
@@ -104,11 +75,6 @@ def get_item_details(item):
 
     except Exception:
         return None
-
-
-# ============================================================
-# ELECTRONICS
-# ============================================================
 
 
 def calculate_electronics_score(lost_item, found_item):
@@ -127,11 +93,6 @@ def calculate_electronics_score(lost_item, found_item):
     return brand_score * 0.40 + model_score * 0.60
 
 
-# ============================================================
-# BAG
-# ============================================================
-
-
 def calculate_bag_score(lost_item, found_item):
 
     try:
@@ -146,11 +107,6 @@ def calculate_bag_score(lost_item, found_item):
     material_score = exact_similarity(lost.material, found.material)
 
     return brand_score * 0.50 + material_score * 0.50
-
-
-# ============================================================
-# BOOK
-# ============================================================
 
 
 def calculate_book_score(lost_item, found_item):
@@ -171,11 +127,6 @@ def calculate_book_score(lost_item, found_item):
     return subject_score * 0.30 + author_score * 0.40 + edition_score * 0.30
 
 
-# ============================================================
-# DOCUMENT
-# ============================================================
-
-
 def calculate_document_score(lost_item, found_item):
 
     try:
@@ -190,11 +141,6 @@ def calculate_document_score(lost_item, found_item):
     authority_score = exact_similarity(lost.issuing_authority, found.issuing_authority)
 
     return type_score * 0.60 + authority_score * 0.40
-
-
-# ============================================================
-# CLOTHING
-# ============================================================
 
 
 def calculate_clothing_score(lost_item, found_item):
@@ -213,11 +159,6 @@ def calculate_clothing_score(lost_item, found_item):
     return brand_score * 0.50 + size_score * 0.50
 
 
-# ============================================================
-# KEY
-# ============================================================
-
-
 def calculate_key_score(lost_item, found_item):
 
     try:
@@ -234,11 +175,6 @@ def calculate_key_score(lost_item, found_item):
     return type_score * 0.40 + keychain_score * 0.60
 
 
-# ============================================================
-# COLOR
-# ============================================================
-
-
 def calculate_color_score(lost_item, found_item):
 
     try:
@@ -251,58 +187,29 @@ def calculate_color_score(lost_item, found_item):
     return exact_similarity(lost_color, found_color)
 
 
-# ============================================================
-# CATEGORY-SPECIFIC DETAILS
-# ============================================================
-
-
 def calculate_details_score(lost_item, found_item):
 
     category = normalize_text(lost_item.category.category_name)
-
-    # --------------------------------------------------------
-    # Electronics
-    # --------------------------------------------------------
 
     if category == "electronics":
 
         return calculate_electronics_score(lost_item, found_item)
 
-    # --------------------------------------------------------
-    # Bag
-    # --------------------------------------------------------
-
     elif category == "bag":
 
         return calculate_bag_score(lost_item, found_item)
-
-    # --------------------------------------------------------
-    # Book
-    # --------------------------------------------------------
 
     elif category == "book":
 
         return calculate_book_score(lost_item, found_item)
 
-    # --------------------------------------------------------
-    # Document
-    # --------------------------------------------------------
-
     elif category == "document":
 
         return calculate_document_score(lost_item, found_item)
 
-    # --------------------------------------------------------
-    # Clothing
-    # --------------------------------------------------------
-
     elif category == "clothing":
 
         return calculate_clothing_score(lost_item, found_item)
-
-    # --------------------------------------------------------
-    # Key
-    # --------------------------------------------------------
 
     elif category == "key":
 
@@ -311,64 +218,27 @@ def calculate_details_score(lost_item, found_item):
     return 0.0
 
 
-# ============================================================
-# DJANGO MATCH SCORE
-# ============================================================
-
-
 def calculate_django_match_score(lost_item, found_item):
 
-    # ========================================================
-    # TITLE
-    # ========================================================
-
     title_score = calculate_similarity(lost_item.title, found_item.title)
-
-    # ========================================================
-    # DESCRIPTION
-    # ========================================================
 
     description_score = calculate_similarity(
         lost_item.description, found_item.description
     )
 
-    # ========================================================
-    # CATEGORY
-    # ========================================================
-
     category_score = exact_similarity(
         lost_item.category.category_name, found_item.category.category_name
     )
-
-    # ========================================================
-    # LOCATION
-    # ========================================================
 
     location_score = calculate_similarity(
         lost_item.lost_location, found_item.lost_location
     )
 
-    # ========================================================
-    # DATE
-    # ========================================================
-
     date_score = calculate_date_similarity(lost_item.lost_date, found_item.lost_date)
-
-    # ========================================================
-    # COLOR
-    # ========================================================
 
     color_score = calculate_color_score(lost_item, found_item)
 
-    # ========================================================
-    # CATEGORY-SPECIFIC DETAILS
-    # ========================================================
-
     details_score = calculate_details_score(lost_item, found_item)
-
-    # ========================================================
-    # FINAL SCORE
-    # ========================================================
 
     final_score = (
         title_score * TITLE_WEIGHT
@@ -379,15 +249,7 @@ def calculate_django_match_score(lost_item, found_item):
         + details_score * DETAILS_WEIGHT
     )
 
-    # ========================================================
-    # MATCH DECISION
-    # ========================================================
-
     is_match = final_score >= MATCH_THRESHOLD
-
-    # ========================================================
-    # RETURN RESULT
-    # ========================================================
 
     return {
         "title_score": title_score,
@@ -400,11 +262,6 @@ def calculate_django_match_score(lost_item, found_item):
         "final_score": final_score,
         "is_match": is_match,
     }
-
-
-# ============================================================
-# DATABASE MULTIPLE MATCHES
-# ============================================================
 
 
 def find_matches(lost_item, found_items):
@@ -428,11 +285,6 @@ def find_matches(lost_item, found_items):
     matches.sort(key=lambda match: match["score"], reverse=True)
 
     return matches
-
-
-# ============================================================
-# DICTIONARY-BASED MATCHING
-# ============================================================
 
 
 def calculate_match_score(lost_item, found_item):

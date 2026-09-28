@@ -43,6 +43,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "college",
             "department",
             "student_id_number",
+            "mobile_number",
             "first_name",
             "last_name",
             "email",
@@ -86,8 +87,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         validated_data.pop("university")
 
         password = validated_data.pop("password")
-
-        user = User(**validated_data)
 
         # IMPORTANT: only works if User has proper password hashing method.
         user = User(**validated_data, password=make_password(password))

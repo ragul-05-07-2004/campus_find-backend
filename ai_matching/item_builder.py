@@ -5,10 +5,6 @@ def build_item_text(item):
 
     parts = []
 
-    # -------------------------
-    # Basic item information
-    # -------------------------
-
     if item.title:
         parts.append(f"Title: {item.title}")
 
@@ -21,19 +17,11 @@ def build_item_text(item):
     if item.lost_location:
         parts.append(f"Location: {item.lost_location}")
 
-    # -------------------------
-    # Item details
-    # -------------------------
-
     try:
         details = item.item_details
 
         if details.color:
             parts.append(f"Color: {details.color}")
-
-        # -------------------------
-        # Electronics
-        # -------------------------
 
         try:
             electronics = details.electronics
@@ -47,10 +35,6 @@ def build_item_text(item):
         except Exception:
             pass
 
-        # -------------------------
-        # Bag
-        # -------------------------
-
         try:
             bag = details.bag
 
@@ -62,10 +46,6 @@ def build_item_text(item):
 
         except Exception:
             pass
-
-        # -------------------------
-        # Book
-        # -------------------------
 
         try:
             book = details.book
@@ -82,10 +62,6 @@ def build_item_text(item):
         except Exception:
             pass
 
-        # -------------------------
-        # Document
-        # -------------------------
-
         try:
             document = details.document
 
@@ -98,10 +74,6 @@ def build_item_text(item):
         except Exception:
             pass
 
-        # -------------------------
-        # Clothing
-        # -------------------------
-
         try:
             clothing = details.clothing
 
@@ -113,10 +85,6 @@ def build_item_text(item):
 
         except Exception:
             pass
-
-        # -------------------------
-        # Key
-        # -------------------------
 
         try:
             key = details.key

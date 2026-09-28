@@ -103,6 +103,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     student_id_number = models.CharField(max_length=100)
 
+    mobile_number = models.CharField(max_length=10, null=True, blank=True)
+
     is_active = models.BooleanField(default=True)
 
     is_staff = models.BooleanField(default=False)

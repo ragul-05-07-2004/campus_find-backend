@@ -15,11 +15,18 @@ class Category(models.Model):
 
 
 class LostItem(models.Model):
+
     STATUS_CHOICES = [
         ("LOST", "Lost"),
         ("FOUND", "Found"),
+        ("MATCHED", "Matched"),
         ("CLAIMED", "Claimed"),
         ("CLOSED", "Closed"),
+    ]
+
+    REPORT_TYPE_CHOICES = [
+        ("LOST", "Lost"),
+        ("FOUND", "Found"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="lost_items")
@@ -33,9 +40,9 @@ class LostItem(models.Model):
     lost_date = models.DateField()
     lost_location = models.CharField(max_length=300)
 
-    # image = models.ImageField(upload_to="lost_items/", blank=True, null=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="LOST")
 
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES)
+    report_type = models.CharField(max_length=10, choices=REPORT_TYPE_CHOICES)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -171,3 +178,65 @@ class PersonalVerificationQuestion(models.Model):
 
     def __str__(self):
         return self.question
+
+
+class ItemMatch(models.Model):
+
+    lost_item = models.ForeignKey(
+        LostItem, on_delete=models.CASCADE, related_name="matches_as_lost"
+    )
+
+    found_item = models.ForeignKey(
+        LostItem, on_delete=models.CASCADE, related_name="matches_as_found"
+    )
+
+    score = models.FloatField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "item_matches"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["lost_item", "found_item"], name="unique_lost_found_match"
+            )
+        ]
+
+    def __str__(self):
+        return f"Lost {self.lost_item.id} ↔ Found {self.found_item.id}"
+
+
+class Notification(models.Model):
+
+    NOTIFICATION_TYPES = [
+        ("MATCH_FOUND", "Match Found"),
+        ("VERIFICATION_SUCCESS", "Verification Successful"),
+        ("VERIFICATION_FAILED", "Verification Failed"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
+
+    notification_type = models.CharField(max_length=40, choices=NOTIFICATION_TYPES)
+
+    message = models.TextField()
+
+    match = models.ForeignKey(
+        ItemMatch,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+
+    is_read = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "notifications"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.notification_type} - {self.user.email}"
